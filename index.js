@@ -26,8 +26,47 @@ db.once("open", () => {
     console.log(`connected: ${MONGO}`)
 })
 
+// Middleware for JWT authentication
+const validateSession = async (req, res, next) => {
+    try {
+        // take the token provided by the request object
+        const token = req.headers.authorization
+
+        // check the status of the token
+        const decodedToken = await jwt.verify(token, process.env.JWT_SECRET)
+
+        // provide response
+        const user = await User.findById(decodedToken.id)
+
+        if (!user) throw new Error("User not found");
+
+        req.user = user; // attach the user to the request object
+
+        return next(); // call the next middleware or route handler
+    } catch (error) {
+        res.json({
+            error: "Unauthorized access"
+        })
+    }
+}
+
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
+})
+
+// GET - /api/public - public route
+app.get("/api/public", (req, res) => {
+    res.json({
+        message: "This is a public route. No authentication required."
+    })
+})
+
+// GET - /api/private - private route
+app.get("/api/private", validateSession, (req, res) => {
+    res.json({
+        message: "This is a private route. Authentication required.",
+        user: req.user // the user object attached by the validateSession middleware
+    })
 })
 
 // POST - /api/signup - create a new user
