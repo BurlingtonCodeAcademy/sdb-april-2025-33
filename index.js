@@ -39,7 +39,7 @@ app.post("/api/signup", async (req, res) => {
             firstName,
             lastName,
             email,
-            password
+            password: await bcrypt.hash(password, 10) // hash the password
         })
 
         const newUser = await user.save();
