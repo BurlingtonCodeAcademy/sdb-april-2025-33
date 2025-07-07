@@ -46,7 +46,7 @@ app.post("/api/signup", async (req, res) => {
         // issue the toke to the user
         const token = jwt.sign({
             id: newUser._id
-        }, "your_jwt_secret", { expiresIn: '1h' });
+        }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({
             user: newUser,
